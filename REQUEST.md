@@ -1,5 +1,15 @@
 # Todo App Demo
 
+**重要**:
+- 本專案以根目錄的 TODO.md 作為唯一真實來源（SoT）。在每個步驟結尾，必須：
+  1) 回傳一個完整覆蓋的 `TODO.md` 檔案（使用多檔案區塊：```path=TODO.md ...```），
+  2) 將該步的核取方塊改為 [x]，
+  3) 在「進度日誌」區塊追加一行摘要。
+
+- 檔案輸出順序：先輸出 `TODO.md`，再輸出其他檔案（若本步有程式碼產出）。
+- `TODO.md` 的章節與核取方塊必須與樣板一致（H2 + 列點）；不得新增或刪除步驟標題。
+- 如需修改前一步的條目，請同步更新 `TODO.md` 並於「進度日誌」註明原因。
+
 ## confirm_model
 - 定義 `Todo` 欄位與型別：`id(int, PK)`, `title(str 1–100)`, `description?(<=2000)`, `status(enum)`, `priority(enum)`, `due_date?(datetime)`, `tags?(List[str])`, `created_at/updated_at(datetime, UTC)`.
 - 設定列舉與預設：`status=('todo'|'in_progress'|'done')`, `priority=('low'|'medium'|'high')`；預設 `todo` / `medium`。
