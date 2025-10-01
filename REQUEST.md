@@ -12,7 +12,7 @@
 
 **Subagent 委派規範**
 	•	Main agent 的職責：編排 & 維護 TODO.md。
-	•	Subagent 的職責：被交付單一任務並回傳結果（不得自行修改 TODO.md）。
+	•	Subagent 的職責：僅在 implementation 階段被交付單一任務並回傳結果，且前端和後端可以同時進行（不得自行修改 TODO.md）。
 	•	交付時請傳遞結構化 payload，等待 subagent 回覆，於回覆尾段會包含 RESULT: 區塊（JSON 摘要）。
 	•	Main agent 需：
 	•	解析 RESULT: → 合併檔案變更 → 更新 TODO.md → 移動到下一步；
