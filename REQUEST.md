@@ -10,6 +10,27 @@
 - `TODO.md` 的章節與核取方塊必須與樣板一致（H2 + 列點）；不得新增或刪除步驟標題。
 - 如需修改前一步的條目，請同步更新 `TODO.md` 並於「進度日誌」註明原因。
 
+**Subagent 委派規範**
+	•	Main agent 的職責：編排 & 維護 TODO.md。
+	•	Subagent 的職責：被交付單一任務並回傳結果（不得自行修改 TODO.md）。
+	•	交付時請傳遞結構化 payload，等待 subagent 回覆，於回覆尾段會包含 RESULT: 區塊（JSON 摘要）。
+	•	Main agent 需：
+	•	解析 RESULT: → 合併檔案變更 → 更新 TODO.md → 移動到下一步；
+	•	若 RESULT.followups 有缺口，先補齊上下文再重呼叫，不可讓 subagent 自行擴權。
+
+**SUBAGENT_PAYLOAD 範例（Main agent 在委派時使用）**
+```json
+{
+  "task": "一句話描述當前單一目標",
+  "constraints": ["不得修改 TODO.md", "遵守 contracts/openapi.yaml", "只在指定目錄讀寫"],
+  "context": {
+    "paths": ["client/", "contracts/openapi.yaml"],
+    "notes": "任何額外注意事項或片段",
+    "accept_result_format": "必須在訊息末尾附 RESULT: JSON（files_changed, notes, followups）"
+  }
+}
+```
+
 ## confirm_model
 - 定義 `Todo` 欄位與型別：`id(int, PK)`, `title(str 1–100)`, `description?(<=2000)`, `status(enum)`, `priority(enum)`, `due_date?(datetime)`, `tags?(List[str])`, `created_at/updated_at(datetime, UTC)`.
 - 設定列舉與預設：`status=('todo'|'in_progress'|'done')`, `priority=('low'|'medium'|'high')`；預設 `todo` / `medium`。
