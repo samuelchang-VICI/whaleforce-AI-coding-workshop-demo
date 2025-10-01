@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [],
+    "deny": [
+      "TodoWrite",
+      "Read(REQUEST.md)"
+    ],
+    "ask": []
+  }
+}
