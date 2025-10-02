@@ -47,19 +47,3 @@ streamlit                # Demo 前端
 	•	tags?: List[str] (<=10, 單個<=20, 去重)
 	•	created_at: datetime
 	•	updated_at: datetime
-
-後端 (FastAPI)
-	•	GET /health
-	•	GET /todos (支援 status, q, tag, page, page_size, sort=due_date:asc)
-	•	POST /todos
-	•	GET /todos/{id}
-	•	PATCH /todos/{id}
-	•	DELETE /todos/{id}
-	•	PATCH /todos/{id}/toggle
-	•	PATCH /todos/bulk
-
-前端 (Streamlit)
-	•	左邊 sidebar：篩選器 (status, priority, tag, 搜尋, 排序)
-	•	中間：Todo 列表 (可 inline 編輯 title/status/priority, 可勾選批次更新)
-	•	右邊：建立/編輯表單 (帶驗證)
-	•	上方 Tab：Baseline / TODO / Subagent 三種版本

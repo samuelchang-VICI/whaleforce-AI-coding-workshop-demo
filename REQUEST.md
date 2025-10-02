@@ -1,63 +1,38 @@
 # Todo App Demo
 
-## confirm_model
-- 定義 `Todo` 欄位與型別：`id(int, PK)`, `title(str 1–100)`, `description?(<=2000)`, `status(enum)`, `priority(enum)`, `due_date?(datetime)`, `tags?(List[str])`, `created_at/updated_at(datetime, UTC)`.
-- 設定列舉與預設：`status=('todo'|'in_progress'|'done')`, `priority=('low'|'medium'|'high')`；預設 `todo` / `medium`。
-- 設計 `tags` 正規化與去重：`trim → lower → 去重`；限制總數 ≤10、單個長度 ≤20。
-- 明確 `due_date >= created_at` 規則；允許 `None`。
-- 定義 `toggle` 規則：`todo|in_progress → done`；`done → todo`。
-- 草擬 SQLModel 類別（只列欄位與驗證思路，不輸出完整專案）。
+我們想打造一個小巧的待辦管理工具：後端用 FastAPI + SQLModel，前端用 Streamlit，讓大家能快速記錄、更新、篩選每天的任務，順手就會想開著用。
 
-## design_api
-- 撰寫 `contracts/openapi.yaml`
-- 撰寫 `contracts/shared_models.py`
-- 列出所有路由與 I/O：  
-  `GET /health`；`GET/POST /todos`；`GET/PATCH/DELETE /todos/{id}`；`PATCH /todos/{id}/toggle`；`PATCH /todos/bulk`。
-- 規劃查詢參數：`status`、`q`（title/description LIKE, 不分大小寫）、`tag`、`page>=1`、`page_size<=100`、`sort=field:dir`。
-- 定義排序白名單：`created_at|updated_at|due_date|priority`（`priority` 需映射權重比較）。
-- 設計 `/bulk` payload 與策略：`{ "ids":[...], "set":{ "status" 或 "priority" } }`；採 **atomic**（任一無效 id → 400 並列出）。
-- 統一錯誤回覆：422 時回 `{ "error":"validation_error", "details":[{ "field","msg" }] }`；其餘依情境回 400/404/500。
-- 撰寫 1–2 組成功/錯誤 JSON 範例以對齊契約。
+## 主要目標
+- 新增、編輯、刪除待辦事項要順手，欄位就維持常見的標題、描述、狀態、優先度、期限，旁邊顯示建立與更新時間。
+- 清單要能用狀態、標籤、文字關鍵字去篩選，再配上排序和分頁，列表不要一次塞太多資料。
+- 點一下就能把待辦從「還在做」切成「完成」，或反過來。
+- 若一次想調整多筆任務（例如把三個任務都改成高優先度），要能勾選後批次處理。
+- 前端用 Streamlit 做個簡單介面：左邊側欄放篩選器，中間顯示列表，底下放新增與編輯表單，遇到錯誤時能看到友善訊息。
 
-## validation_rules
-- 拆分 Schema：`TodoCreate`（必填/限制）、`TodoUpdate`（全部選填但各自合法）。
-- 集中欄位驗證：  
-  `title` 長度、`description` 長度、`tags` 數量/單長/正規化/去重、`due_date >= created_at`。
-- 建立 422 轉換 handler：攔截校驗錯誤並轉成統一格式。
-- 確保 `PATCH` 只更新提供的欄位，未提供的不動。
-- 在 model 或 service 層補 business rules（如 `updated_at` 自動刷新）。
+## 我們對資料的期待
+- 每筆待辦要有 ID、標題、描述、狀態、優先度、到期日、標籤，以及建立/更新時間。
+- 狀態先用 todo / in_progress / done，優先度用 low / medium / high；預設 todo、medium 就好。
+- 標籤希望能支援多個、大小寫不敏感、不要重複；超過十個或太長就先擋下來。
+- 到期日如果比建立時間還早就提醒使用者重新填。
 
-## server_impl
-- 建立目錄結構：`server/main.py`, `db.py`, `models.py`, `schemas.py`, `crud.py`, `deps.py`, `routers/todos.py`, `tests/test_todos.py`。
-- 資料庫啟動：建立 engine、Session 依賴、`on_startup` 自動建表（可選 `seed()`）。
-- 實作查詢：合併 `status/tag/q` 過濾；`page/page_size` 分頁；`sort` 欄位與方向驗證＋`priority` 權重排序。
-- CRUD 與業務：`POST/GET/PATCH/DELETE`；`/toggle` 依規則切換；所有變更更新 `updated_at`。
-- `/bulk`：先驗證 `ids` 全存在 → 原子更新 `status/priority` → 回 `{ updated: n }` 或附 `items`。
-- 防呆與相容：CORS 設定、錯誤處理（400/404/422）、SQLite 對 `ilike` 的兼容（以 `lower()` + `LIKE`）。
+## 後端安排
+- 維持 FastAPI + SQLModel 的基本骨架：把 models、schemas、crud、routers 拆開，方便維護。
+- REST API 先做這幾支：`/health`；`/todos` 的 GET/POST；`/todos/{id}` 的 GET/PATCH/DELETE；`/todos/{id}/toggle`；還有支援一次更新多筆的 `/todos/bulk`。
+- 查詢要支援篩選、文字搜尋（標題/描述不分大小寫）、排序（至少 created_at、updated_at、due_date、priority），以及 page / page_size。
+- 如果找不到資料回 404，資料格式錯誤就丟一個一致的 422 錯誤格式，讓前端有地方顯示。
 
-## client_impl
-- 建立 Streamlit 結構：`client/app.py`（UI 主檔）、`api.py`（HTTP 包裝）、`widgets.py`（共用元件）。
-- Sidebar 篩選器：`status`、`priority`、`tag`、`q`、`sort`（欄位+方向）、`page/page_size`。
-- 列表區：表格顯示欄位；支援**勾選多筆**；點擊 `title/status/priority` 觸發就地編輯→呼叫 `PATCH`。
-- 批次操作：選取多筆 → 設定 `status/priority` → 呼叫 `/bulk`，成功後刷新；失敗顯示錯誤。
-- 表單：建立/編輯 Todo；顯示 422 `details[]`（逐欄位錯誤）；送出成功後清空與刷新列表。
-- 輔助資訊：在頁面顯示目前查詢參數摘要、分頁資訊與總數。
+## 前端想像畫面
+- Streamlit app 有清楚的清單和側欄篩選器，列表中能直接勾選多筆或點欄位編輯。
+- 批次操作用對話框或小表單輸入要改的內容，送出後重新整理列表。
+- 新增/編輯表單顯示欄位錯誤訊息，成功後清空表單並刷新。
+- 頁面底部可以展示目前的篩選條件、分頁狀態，讓人知道自己看的是哪一段資料。
 
-## tests
-- 測試環境：pytest + httpx `TestClient`；臨時 SQLite（每測重建或使用 transaction）。
-- 夾具：`client`、`session`、`seed_todos(n)`。
-- 編寫代表性案例：  
-  - 建立成功 + 邊界：最短/最長 `title`、`tags` 去重。  
-  - 列表：分頁 `page=2&page_size=5`；排序 `sort=priority:desc`。  
-  - 搜尋/標籤組合：`q` + `tag` 同時作用且仍正確分頁/排序。  
-  - 更新：`due_date < created_at` 觸發 422；一般欄位 `PATCH` 成功。  
-  - 切換：`/toggle` 符合規則。  
-  - 批次：`ids` 含不存在 → 400；全存在 → `updated == len(ids)`。  
-  - 刪除：`DELETE` 後 `GET` 404。
-- 確保測試互不污染、報告可讀（失敗訊息包含欄位與原因）。
+## 測試 & 範例
+- 用 pytest + FastAPI 的 TestClient，針對常見流程（新增、查詢、排序、更新、批次、切換狀態）寫幾個代表案例。
+- 至少準備一組成功回應和一組錯誤回應的 JSON 範例，讓前後端對齊。
 
-## final_output
-- 以**多檔案**區塊一次輸出完整專案：`server/`, `client/`, `tests/` 或 `pyproject.toml`, `README.md`。
-- `README.md` 包含：安裝、啟動（`uvicorn server.main:app --reload`、`streamlit run client/app.py`）、環境變數（若有）、`pytest -q` 指令。
-- 檢查清單：依賴齊全（`fastapi`, `sqlmodel`, `uvicorn`, `pydantic`, `httpx`, `pytest`, `streamlit`…）、匯入路徑正確、實際可啟動並通過最小測試。
-- 建立 `start.sh`，方便使用者同時啟動前端和後端
+## 完成交付
+- 最後整理一份 README：怎麼安裝套件、啟動後端 (`uvicorn server.main:app --reload`)、前端 (`streamlit run client/app.py`)、怎麼跑測試 (`pytest -q`)。
+- 提供一個 `start.sh`，一次啟動前後端。
+- 如果時間允許，可以再補一些 nice-to-have（像是紀錄操作歷史、標籤管理頁），但先把基本流程做順就行。
+
