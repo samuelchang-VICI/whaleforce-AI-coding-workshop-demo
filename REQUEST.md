@@ -91,3 +91,4 @@
 - 以**多檔案**區塊一次輸出完整專案：`server/`, `client/`, `tests/` 或 `pyproject.toml`, `README.md`。
 - `README.md` 包含：安裝、啟動（`uvicorn server.main:app --reload`、`streamlit run client/app.py`）、環境變數（若有）、`pytest -q` 指令。
 - 檢查清單：依賴齊全（`fastapi`, `sqlmodel`, `uvicorn`, `pydantic`, `httpx`, `pytest`, `streamlit`…）、匯入路徑正確、實際可啟動並通過最小測試。
+- 建立 `start.sh`，方便使用者同時啟動前端和後端
