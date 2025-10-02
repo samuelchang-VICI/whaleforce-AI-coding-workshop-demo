@@ -9,6 +9,8 @@
 - 草擬 SQLModel 類別（只列欄位與驗證思路，不輸出完整專案）。
 
 ## design_api
+- 撰寫 `contracts/openapi.yaml`
+- 撰寫 `contracts/shared_models.py`
 - 列出所有路由與 I/O：  
   `GET /health`；`GET/POST /todos`；`GET/PATCH/DELETE /todos/{id}`；`PATCH /todos/{id}/toggle`；`PATCH /todos/bulk`。
 - 規劃查詢參數：`status`、`q`（title/description LIKE, 不分大小寫）、`tag`、`page>=1`、`page_size<=100`、`sort=field:dir`。
@@ -58,3 +60,4 @@
 - 以**多檔案**區塊一次輸出完整專案：`server/`, `client/`, `tests/` 或 `pyproject.toml`, `README.md`。
 - `README.md` 包含：安裝、啟動（`uvicorn server.main:app --reload`、`streamlit run client/app.py`）、環境變數（若有）、`pytest -q` 指令。
 - 檢查清單：依賴齊全（`fastapi`, `sqlmodel`, `uvicorn`, `pydantic`, `httpx`, `pytest`, `streamlit`…）、匯入路徑正確、實際可啟動並通過最小測試。
+- 建立 `start.sh`，方便使用者同時啟動前端和後端
