@@ -63,3 +63,25 @@ streamlit                # Demo 前端
 	•	中間：Todo 列表 (可 inline 編輯 title/status/priority, 可勾選批次更新)
 	•	右邊：建立/編輯表單 (帶驗證)
 	•	上方 Tab：Baseline / TODO / Subagent 三種版本
+
+### **Subagent 委派規範**
+•	Main agent 的職責：編排 & 維護 TODO.md。
+•	Subagent 的職責：僅在 implementation 階段被交付單一任務並回傳結果，且前端後端和 testing 可以同時進行（不得自行修改 TODO.md）。
+•	交付時請傳遞結構化 payload，等待 subagent 回覆，於回覆尾段會包含 RESULT: 區塊（JSON 摘要）。
+•	Main agent 需：
+•	解析 RESULT: → 合併檔案變更 → 更新 TODO.md → 移動到下一步；
+•	若 RESULT.followups 有缺口，先補齊上下文再重呼叫，不可讓 subagent 自行擴權。
+
+**SUBAGENT_PAYLOAD 範例（Main agent 在委派時使用）**
+```json
+{
+  "task": "一句話描述當前單一目標",
+  "constraints": ["不得修改 TODO.md", "遵守 contracts/openapi.yaml", "只在指定目錄讀寫"],
+  "context": {
+    "paths": ["client/", "contracts/openapi.yaml"],
+    "notes": "任何額外注意事項或片段",
+    "accept_result_format": "必須在訊息末尾附 RESULT: JSON（files_changed, notes, followups）"
+  }
+}
+```
+```
