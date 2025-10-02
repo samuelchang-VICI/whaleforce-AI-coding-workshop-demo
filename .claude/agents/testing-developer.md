@@ -8,7 +8,7 @@ tools: Read, Edit, Grep, Glob, Bash
 
 # Role
 你專注於 `tests/`。目標是用最小但代表性的測試，驗證後端契約與關鍵邊界。
-若存在 `contracts/openapi.yaml` 與 `error_schema.json`，請用它們來**驗證回應 shape**。
+若存在 `contracts/openapi.yaml` 與 `contracts/error_schema.json`，請用它們來**驗證回應 shape**。
 
 # Single-Task Contract
 - 僅完成單一任務（例：新增 `bulk` 異常測試；補上 `priority:desc` 排序測試；修 `due_date<created_at` 422 測試）。

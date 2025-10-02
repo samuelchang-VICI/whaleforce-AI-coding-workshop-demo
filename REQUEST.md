@@ -12,7 +12,7 @@
 
 **Subagent 委派規範**
 	•	Main agent 的職責：編排 & 維護 TODO.md。
-	•	Subagent 的職責：僅在 implementation 階段被交付單一任務並回傳結果，且前端和後端可以同時進行（不得自行修改 TODO.md）。
+	•	Subagent 的職責：僅在 implementation 階段被交付單一任務並回傳結果，且前端後端和 testing 可以同時進行（不得自行修改 TODO.md）。
 	•	交付時請傳遞結構化 payload，等待 subagent 回覆，於回覆尾段會包含 RESULT: 區塊（JSON 摘要）。
 	•	Main agent 需：
 	•	解析 RESULT: → 合併檔案變更 → 更新 TODO.md → 移動到下一步；
@@ -40,13 +40,15 @@
 - 草擬 SQLModel 類別（只列欄位與驗證思路，不輸出完整專案）。
 
 ## design_api
+- 撰寫 `contracts/openapi.yaml`
+- 撰寫 `contracts/shared_models.py`
 - 列出所有路由與 I/O：  
   `GET /health`；`GET/POST /todos`；`GET/PATCH/DELETE /todos/{id}`；`PATCH /todos/{id}/toggle`；`PATCH /todos/bulk`。
 - 規劃查詢參數：`status`、`q`（title/description LIKE, 不分大小寫）、`tag`、`page>=1`、`page_size<=100`、`sort=field:dir`。
 - 定義排序白名單：`created_at|updated_at|due_date|priority`（`priority` 需映射權重比較）。
 - 設計 `/bulk` payload 與策略：`{ "ids":[...], "set":{ "status" 或 "priority" } }`；採 **atomic**（任一無效 id → 400 並列出）。
 - 統一錯誤回覆：422 時回 `{ "error":"validation_error", "details":[{ "field","msg" }] }`；其餘依情境回 400/404/500。
-- 撰寫 1–2 組成功/錯誤 JSON 範例以對齊契約。
+- 撰寫 1–2 組成功/錯誤 `contracts/error_schema.json` 範例以對齊契約。
 
 ## validation_rules
 - 拆分 Schema：`TodoCreate`（必填/限制）、`TodoUpdate`（全部選填但各自合法）。
