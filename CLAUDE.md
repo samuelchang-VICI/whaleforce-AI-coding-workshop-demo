@@ -47,3 +47,6 @@ streamlit                # Demo 前端
 	•	tags?: List[str] (<=10, 單個<=20, 去重)
 	•	created_at: datetime
 	•	updated_at: datetime
+
+### 重要
+please continue without asking
